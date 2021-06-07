@@ -35,6 +35,11 @@ elif config.DEVICE == 'blinkstick':
     # Create a listener that turns the leds off when the program terminates
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
+elif config.DEVICE == 'http_json':
+    import json
+    import requests
+    url = config.URL
+    headers = config.HEADERS
 
 _gamma = np.load(config.GAMMA_TABLE_PATH)
 """Gamma lookup table used for nonlinear brightness correction"""
@@ -166,6 +171,30 @@ def _update_blinkstick():
     #send the data to the blinkstick
     stick.set_led_data(0, newstrip)
 
+def _update_http_json():
+    """ Send LED values as Json via HTTP """
+    global pixels 
+   
+    # Truncate values and cast to integer
+    pixels = np.clip(pixels, 0, 255).astype(int)
+    # Optional gamma correction
+    #p = _gamma[pixels] if config.SOFTWARE_GAMMA_CORRECTION else np.copy(pixels)
+    # Read the rgb values
+    #r = p[0][:].astype(int)
+    #g = p[1][:].astype(int)
+    #b = p[2][:].astype(int)
+
+    #create array in which we will store the led states
+    #newstrip = [None]*(config.N_PIXELS)
+    #for i in range(config.N_PIXELS):
+    #    newstrip[i] = { 
+    #        "r":int(r[i]) ,
+    #        "g":int(g[i]) ,
+    #        "b":int(b[i])
+    #    }
+
+    newstripjson = json.dumps(pixels.tolist())
+    r = requests.post(url, newstripjson, headers=headers)
 
 def update():
     """Updates the LED strip values"""
@@ -177,6 +206,8 @@ def update():
         _update_pi_apa102()
     elif config.DEVICE == 'blinkstick':
         _update_blinkstick()
+    elif config.DEVICE == 'http_json':
+        _update_http_json()
     else:
         raise ValueError('Invalid device selected')
 
