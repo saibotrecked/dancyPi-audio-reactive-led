@@ -39,6 +39,18 @@ if DEVICE == 'pi':
     SOFTWARE_GAMMA_CORRECTION = True
     """Set to True because Raspberry Pi doesn't use hardware dithering"""
 
+if DEVICE == 'pi_apa102':
+    LED_PIN_MOSI = 13
+    """GPIO pin(for data) connected to the LED strip pixels must be SPI"""
+    LED_PIN_SCLK = 19
+    """GPIO pin(for ckock) connected to the LED strip pixels must be SPI"""
+    BRIGHTNESS = 100
+    """Brightness of LED strip between 0 and 100"""
+    LED_ORDER = 'rbg'
+    """Order in which the colours are addressed (this differs from strip to strip)"""
+    SOFTWARE_GAMMA_CORRECTION = True
+    """Set to True because Raspberry Pi doesn't use hardware dithering"""
+
 if DEVICE == 'blinkstick':
     SOFTWARE_GAMMA_CORRECTION = True
     """Set to True because blinkstick doesn't use hardware dithering"""

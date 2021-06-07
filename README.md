@@ -67,6 +67,17 @@ through the install script. Since it's done this way, there's no more "demo" scr
 
 You'll still need to make some edits to fit your needs. 
 
+
+### Install dependencies for apa102 
+
+Check Readme: https://github.com/tinue/apa102-pi/#use-the-apa102-project-as-a-library
+
+TL;DR:
+Activate SPI: sudo raspi-config; Go to "Interface Options"; Go to "SPI"; Enable SPI; While you are at it: Do change the default password! Exit the tool and reboot.
+```shell
+sudo pip3 install apa102-pi
+``` 
+
 ### `config.py` has been edited as follows:
 
 ```python

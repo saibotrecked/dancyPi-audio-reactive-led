@@ -16,6 +16,11 @@ elif config.DEVICE == 'pi':
                                        config.LED_FREQ_HZ, config.LED_DMA,
                                        config.LED_INVERT, config.BRIGHTNESS)
     strip.begin()
+elif config.DEVICE == 'pi_apa102':
+    from apa102_pi.driver import *
+    strip = apa102.APA102(num_led=config.N_PIXELS, mosi=config.LED_PIN_MOSI, sclk=config.LED_PIN_SCLK, order=config.LED_ORDER)
+    strip.set_global_brightness(config.BRIGHTNESS)
+    strip.clear_strip()
 elif config.DEVICE == 'blinkstick':
     from blinkstick import blinkstick
     import signal
@@ -109,6 +114,32 @@ def _update_pi():
     _prev_pixels = np.copy(p)
     strip.show()
 
+def _update_pi_apa102():
+    """Writes new LED values to the Raspberry Pi's LED strip
+
+    Raspberry Pi uses the apa102 to control the LED strip directly.
+    This function updates the LED strip with new values.
+    """
+    global pixels, _prev_pixels
+    # Truncate values and cast to integer
+    pixels = np.clip(pixels, 0, 255).astype(int)
+    # Optional gamma correction
+    p = _gamma[pixels] if config.SOFTWARE_GAMMA_CORRECTION else np.copy(pixels)
+    # Encode 24-bit LED values in 32 bit integers
+    r = p[0][:].astype(int)
+    g = p[1][:].astype(int)
+    b = p[2][:].astype(int)
+    # Update the pixels
+    for i in range(config.N_PIXELS):
+        # Ignore pixels if they haven't changed (saves bandwidth)
+        if np.array_equal(p[:, i], _prev_pixels[:, i]):
+            continue
+
+        strip.set_pixel(i, r[i], g[i], b[i])
+    _prev_pixels = np.copy(p)
+    strip.show()
+
+
 def _update_blinkstick():
     """Writes new LED values to the Blinkstick.
         This function updates the LED strip with new values.
@@ -142,6 +173,8 @@ def update():
         _update_esp8266()
     elif config.DEVICE == 'pi':
         _update_pi()
+    elif config.DEVICE == 'pi_apa102':
+        _update_pi_apa102()
     elif config.DEVICE == 'blinkstick':
         _update_blinkstick()
     else:
